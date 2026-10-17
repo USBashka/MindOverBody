@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">MOB — Mind Over Body</title>
+  <desc id="desc">Неподвижные буквы MOB в центре. Вокруг вращаются надпись MIND OVER BODY, тонкие орбиты и точки. Круговая шкала, звезда и пульс дополняют композицию.</desc>
+  <style>
+    .orbit, .counter-orbit, .satellites {
+      transform-origin: 320px 320px;
+    }
+    .orbit {
+      animation: orbit 30s linear infinite;
+    }
+    .counter-orbit {
+      animation: orbit 72s linear infinite reverse;
+    }
+    .satellites {
+      animation: orbit 18s linear infinite reverse;
+    }
+    .pulse {
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes orbit {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: .4; }
+      50% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .orbit, .counter-orbit, .satellites, .pulse { animation: none; }
+    }
+  </style>
+  <defs>
+    <path id="circle" d="M 320,112 A 208,208 0 1,1 320,528 A 208,208 0 1,1 320,112"/>
+    <path id="major-tick" d="M 320,35 V 48"/>
+    <path id="cross" d="M -5,0 H 5 M 0,-5 V 5"/>
+    <g id="tick-sector">
+      <path d="M 320,35 V 41" transform="rotate(6 320 320)"/>
+      <path d="M 320,35 V 41" transform="rotate(12 320 320)"/>
+      <path d="M 320,35 V 41" transform="rotate(18 320 320)"/>
+      <path d="M 320,35 V 41" transform="rotate(24 320 320)"/>
+    </g>
+  </defs>
+  <g fill="#171918">
+    <g aria-hidden="true" fill="none" stroke="#171918">
+      <g stroke-width="1" opacity=".24">
+        <use href="#tick-sector"/>
+        <use href="#tick-sector" transform="rotate(30 320 320)"/>
+        <use href="#tick-sector" transform="rotate(60 320 320)"/>
+        <use href="#tick-sector" transform="rotate(90 320 320)"/>
+        <use href="#tick-sector" transform="rotate(120 320 320)"/>
+        <use href="#tick-sector" transform="rotate(150 320 320)"/>
+        <use href="#tick-sector" transform="rotate(180 320 320)"/>
+        <use href="#tick-sector" transform="rotate(210 320 320)"/>
+        <use href="#tick-sector" transform="rotate(240 320 320)"/>
+        <use href="#tick-sector" transform="rotate(270 320 320)"/>
+        <use href="#tick-sector" transform="rotate(300 320 320)"/>
+        <use href="#tick-sector" transform="rotate(330 320 320)"/>
+      </g>
+      <g stroke-width="1.5" opacity=".65">
+        <use href="#major-tick"/>
+        <use href="#major-tick" transform="rotate(30 320 320)"/>
+        <use href="#major-tick" transform="rotate(60 320 320)"/>
+        <use href="#major-tick" transform="rotate(90 320 320)"/>
+        <use href="#major-tick" transform="rotate(120 320 320)"/>
+        <use href="#major-tick" transform="rotate(150 320 320)"/>
+        <use href="#major-tick" transform="rotate(180 320 320)"/>
+        <use href="#major-tick" transform="rotate(210 320 320)"/>
+        <use href="#major-tick" transform="rotate(240 320 320)"/>
+        <use href="#major-tick" transform="rotate(270 320 320)"/>
+        <use href="#major-tick" transform="rotate(300 320 320)"/>
+        <use href="#major-tick" transform="rotate(330 320 320)"/>
+      </g>
+      <circle cx="320" cy="320" r="256" stroke-width=".75" opacity=".15"/>
+      <circle cx="320" cy="320" r="188" stroke-width=".75" opacity=".18"/>
+      <g class="counter-orbit" stroke-linecap="round">
+        <circle cx="320" cy="320" r="256" pathLength="360" stroke-dasharray="66 24 8 82" stroke-width="1.5" opacity=".65" transform="rotate(-90 320 320)"/>
+        <circle cx="320" cy="64" r="4" fill="#171918" stroke="none"/>
+        <circle cx="320" cy="576" r="5" fill="#cc684b" stroke="none"/>
+      </g>
+      <g class="satellites">
+        <circle cx="320" cy="320" r="188" pathLength="360" stroke-dasharray="32 148" stroke-width="1.5" opacity=".5" transform="rotate(-90 320 320)"/>
+        <circle cx="320" cy="132" r="4" fill="#cc684b" stroke="none"/>
+        <circle cx="320" cy="508" r="3" fill="#171918" stroke="none"/>
+      </g>
+      <g stroke-width="1" opacity=".35">
+        <use href="#cross" transform="translate(103 103)"/>
+        <use href="#cross" transform="translate(537 103)"/>
+        <use href="#cross" transform="translate(103 537)"/>
+        <use href="#cross" transform="translate(537 537)"/>
+      </g>
+      <path d="M 290,235 H 266 V 246 M 350,235 H 374 V 246 M 290,405 H 266 V 394 M 350,405 H 374 V 394" stroke-width="1" opacity=".3"/>
+    </g>
+    <g class="orbit" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="600" letter-spacing="4.5">
+      <text><textPath href="#circle" startOffset="0%" textLength="362" lengthAdjust="spacing">MIND OVER BODY</textPath></text>
+      <text><textPath href="#circle" startOffset="33.333333%" textLength="362" lengthAdjust="spacing">MIND OVER BODY</textPath></text>
+      <text><textPath href="#circle" startOffset="66.666667%" textLength="362" lengthAdjust="spacing">MIND OVER BODY</textPath></text>
+      <circle cx="320" cy="103" r="3.5" transform="rotate(110 320 320)"/>
+      <circle cx="320" cy="103" r="3.5" transform="rotate(230 320 320)"/>
+      <circle cx="320" cy="103" r="3.5" transform="rotate(350 320 320)"/>
+    </g>
+    <g aria-hidden="true">
+      <path class="pulse" fill="#cc684b" d="M 320,208 C 322,224 324,226 338,228 C 324,230 322,232 320,248 C 318,232 316,230 302,228 C 316,226 318,224 320,208 Z"/>
+      <path d="M 157,368 V 272 H 183 L 205,316 L 227,272 H 253 V 368 H 228 V 317 L 213,347 H 197 L 182,317 V 368 Z"/>
+      <path fill-rule="evenodd" d="M 316,270 C 347,270 366,289 366,320 C 366,351 347,370 316,370 C 285,370 266,351 266,320 C 266,289 285,270 316,270 Z M 316,294 C 301,294 293,304 293,320 C 293,336 301,346 316,346 C 331,346 339,336 339,320 C 339,304 331,294 316,294 Z"/>
+      <path fill-rule="evenodd" d="M 380,272 H 432 C 458,272 473,281 473,297 C 473,308 467,315 458,319 C 470,322 477,330 477,342 C 477,360 462,368 435,368 H 380 Z M 406,293 V 309 H 430 C 441,309 446,307 446,301 C 446,295 441,293 430,293 Z M 406,329 V 347 H 433 C 445,347 450,345 450,338 C 450,332 445,329 433,329 Z"/>
+      <path class="pulse" d="M 293,423 H 307 L 313,416 L 320,431 L 327,411 L 333,423 H 347" fill="none" stroke="#cc684b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="284" cy="423" r="1.5" opacity=".35"/>
+      <circle cx="356" cy="423" r="1.5" opacity=".35"/>
+    </g>
+  </g>
+</svg>
