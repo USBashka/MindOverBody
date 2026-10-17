@@ -34,10 +34,43 @@ def bounds(node):
     return (left, top, right, bottom) if right > left and bottom > top else None
 
 
+def visible_bounds(tree, node):
+    """Clip WebView descendants to the actual dialog/scroll viewport."""
+    rectangle = bounds(node)
+    if rectangle is None:
+        return None
+    parents = {child: parent for parent in tree.iter() for child in parent}
+    ancestor = parents.get(node)
+    while ancestor is not None:
+        if (ancestor.get("scrollable") == "true"
+                or ancestor.get("class") in ("android.app.Dialog", "android.webkit.WebView")):
+            viewport = bounds(ancestor)
+            if viewport is None:
+                return None
+            rectangle = (max(rectangle[0], viewport[0]), max(rectangle[1], viewport[1]),
+                         min(rectangle[2], viewport[2]), min(rectangle[3], viewport[3]))
+            if rectangle[2] <= rectangle[0] or rectangle[3] <= rectangle[1]:
+                return None
+        ancestor = parents.get(ancestor)
+    return rectangle
+
+
+def usable_bounds(tree, node):
+    rectangle = visible_bounds(tree, node)
+    original = bounds(node)
+    if rectangle is None or original is None:
+        return None
+    # Do not tap a sliver exposed at the edge of an overflowing dialog.
+    if any(rectangle[end] - rectangle[start] < min(24, original[end] - original[start])
+           for start, end in ((0, 2), (1, 3))):
+        return None
+    return rectangle
+
+
 def find_node(tree, text, editable=False, exact=False):
     matches = []
     for node in tree.iter("node"):
-        if node.get("enabled") == "false" or bounds(node) is None:
+        if node.get("enabled") == "false" or usable_bounds(tree, node) is None:
             continue
         if editable and not node.get("class", "").endswith("EditText"):
             continue
@@ -139,6 +172,7 @@ class Smoke:
         # WebView's accessibility tree can update before the compositor paints
         # the corresponding frame, especially immediately after launch.
         time.sleep(.8)
+        self.dump(timeout=10)
         image = self.adb("exec-out", "screencap", "-p", timeout=15, binary=True)
         if not image.startswith(b"\x89PNG\r\n\x1a\n"):
             raise RuntimeError("Android did not return a PNG screenshot")
@@ -181,15 +215,26 @@ class Smoke:
         raise RuntimeError(f"Visible UI did not contain input {identifier!r} ({label}) within {seconds}s: {last_error}")
 
     def tap(self, node):
-        left, top, right, bottom = bounds(node)
-        self.adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
+        rectangle = usable_bounds(self.tree, node)
+        if rectangle is None:
+            raise RuntimeError("Cannot tap an element outside its visible scroll/dialog viewport")
+        left, top, right, bottom = rectangle
+        x, y = (left + right) // 2, (top + bottom) // 2
+        label = node.get("text") or node.get("content-desc") or node.get("resource-id") or node.get("class")
+        print(f"TAP: {label!r} visible={rectangle} point=({x},{y})", flush=True)
+        self.adb("shell", "input", "tap", str(x), str(y))
 
     def swipe(self, downward=False):
-        # Coordinates come from the live WebView bounds, never a fixed device size.
-        nodes = [node for node in self.tree.iter("node") if node.get("class") == "android.webkit.WebView" and bounds(node)]
+        # Scroll inside the open dialog when present; its backdrop must never be
+        # used as a swipe/tap surface. Otherwise use the visible WebView.
+        nodes = [node for node in self.tree.iter("node")
+                 if node.get("class") == "android.app.Dialog" and usable_bounds(self.tree, node)]
+        if not nodes:
+            nodes = [node for node in self.tree.iter("node")
+                     if node.get("class") == "android.webkit.WebView" and usable_bounds(self.tree, node)]
         if not nodes:
             raise RuntimeError("A visible Android WebView was not found")
-        left, top, right, bottom = bounds(nodes[0])
+        left, top, right, bottom = usable_bounds(self.tree, nodes[-1])
         x = (left + right) // 2
         high, low = int(top + (bottom - top) * .28), int(top + (bottom - top) * .79)
         start, end = (high, low) if downward else (low, high)
@@ -201,7 +246,14 @@ class Smoke:
             self.dump(timeout=min(15, deadline - time.monotonic()))
             node = find_node(self.tree, text)
             if node is not None:
-                return node
+                rectangle = usable_bounds(self.tree, node)
+                # A fling can leave accessibility coordinates ahead of paint.
+                # Require two fresh trees with stable visible bounds before tap.
+                self.dump(timeout=min(15, max(.1, deadline - time.monotonic())))
+                settled = find_node(self.tree, text)
+                if settled is not None and usable_bounds(self.tree, settled) == rectangle:
+                    return settled
+                continue
             if deadline - time.monotonic() < 6:
                 break
             self.swipe(downward=downward)
@@ -250,6 +302,8 @@ class Smoke:
         if re.search(r"(?:mInputShown|mIsInputViewShown|isInputViewShown)=true", keyboard):
             self.adb("shell", "input", "keyevent", "KEYCODE_BACK")
         self.screenshot("02-editor")
+        self.seek_text("Сохранить запись")
+        self.screenshot("02b-save-visible")
         self.tap(self.seek_text("Сохранить запись"))
         self.wait_text("Между сном и явью")
         self.seek_text(self.title)
