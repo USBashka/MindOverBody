@@ -237,7 +237,7 @@ class Smoke:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--apk", type=Path, default=Path(os.environ.get("APK", ROOT / "distributions/MOB-1.0.0.apk")))
+    parser.add_argument("--apk", type=Path, default=Path(os.environ.get("APK", ROOT / "distributions/MOB-1.0.1.apk")))
     parser.add_argument("--artifacts", type=Path, default=ROOT / "artifacts/android")
     parser.add_argument("--serial", default=os.environ.get("ANDROID_SERIAL"))
     parser.add_argument("--adb", default=os.environ.get("ADB", "adb"))

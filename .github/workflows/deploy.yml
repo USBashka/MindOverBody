@@ -3,6 +3,9 @@ name: Deploy MOB
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   pull_request:
   workflow_dispatch:
 
@@ -100,12 +103,12 @@ jobs:
       - name: Verify the signed release distribution
         run: |
           (cd distributions && sha256sum --check SHA256SUMS)
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.0.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs distributions/MOB-1.0.0.apk | grep -F 'eea40fc8174978406bd1a80c15f8644fca96bcde0d97b7ee1eea097f6fe61d37'
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.1.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs distributions/MOB-1.0.1.apk | grep -F 'eea40fc8174978406bd1a80c15f8644fca96bcde0d97b7ee1eea097f6fe61d37'
       - uses: actions/upload-artifact@v4
         with:
           name: MOB-Android-APK
-          path: distributions/MOB-1.0.0.apk
+          path: distributions/MOB-1.0.1.apk
           if-no-files-found: error
       - name: Enable Android emulator acceleration
         run: sudo chmod a+rw /dev/kvm
@@ -118,7 +121,7 @@ jobs:
           profile: pixel_5
           disable-animations: true
           emulator-boot-timeout: 600
-          script: bash scripts/check-android.sh
+          script: python3 scripts/check-android-files.py --native-files
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -140,11 +143,11 @@ jobs:
 
           APK подписан постоянным release-ключом MOB; отладка отключена. Сертификат и инструкция сборки: docs/ANDROID.md.
           NOTES
-          if gh release view v1.0.0 >/dev/null 2>&1; then
-            echo 'Release v1.0.0 already exists; preserving its version and notes.'
+          if gh release view v1.0.1 >/dev/null 2>&1; then
+            echo 'Release v1.0.1 already exists; preserving its version and notes.'
           else
-            gh release create v1.0.0 --target "$GITHUB_SHA" --title 'MOB 1.0' --notes-file "$RUNNER_TEMP/mob-release-notes.md"
+            gh release create v1.0.1 --target "$GITHUB_SHA" --title 'MOB 1.0.1' --notes-file "$RUNNER_TEMP/mob-release-notes.md"
           fi
-          if ! gh release view v1.0.0 --json assets --jq '.assets[].name' | grep -Fx 'MOB-1.0.0.apk'; then
-            gh release upload v1.0.0 distributions/MOB-1.0.0.apk distributions/SHA256SUMS
+          if ! gh release view v1.0.1 --json assets --jq '.assets[].name' | grep -Fx 'MOB-1.0.1.apk'; then
+            gh release upload v1.0.1 distributions/MOB-1.0.1.apk distributions/SHA256SUMS
           fi

@@ -8,7 +8,7 @@
 
 <p align="center">
 <a href="https://usbashka.github.io/MindOverBody/">Открыть приложение</a> ·
-<a href="https://github.com/USBashka/MindOverBody/releases/tag/v1.0.0">Скачать Android APK</a> ·
+<a href="https://github.com/USBashka/MindOverBody/releases/tag/v1.0.1">Скачать Android APK</a> ·
 <a href="docs/INSTALL.md">Установка PWA</a> ·
 <a href="docs/GOOGLE_DRIVE.md">Подключить Google Диск</a>
 </p>

@@ -2,7 +2,7 @@
 
 ## Установить приложение
 
-Скачайте **MOB-1.0.0.apk** из [релиза MOB 1.0](https://github.com/USBashka/MindOverBody/releases/tag/v1.0.0). Откройте файл и при необходимости разрешите установку из выбранного браузера или файлового менеджера. Это настоящий подписанный APK с упакованными ресурсами, а не ссылка на PWA.
+Скачайте **MOB-1.0.1.apk** из [релиза MOB 1.0.1](https://github.com/USBashka/MindOverBody/releases/tag/v1.0.1). Откройте файл и при необходимости разрешите установку из выбранного браузера или файлового менеджера. Это настоящий подписанный APK с упакованными ресурсами, а не ссылка на PWA.
 
 Требуется Android 8.0+ и актуальный **Android System WebView** (Chromium 120+ рекомендуется). Для синхронизации нужны Google Play Services и подключённый аккаунт Google; без них локальный дневник, курс, карта и импорт работают самостоятельно. Не удаляйте установленное приложение для обычного обновления: APK с той же подписью обновляет программу, сохраняя локальные записи.
 
@@ -12,7 +12,7 @@
 
 ## Что находится внутри
 
-- Android-приложение `ru.usbashka.mob`, версия `1.0.0` (versionCode `1`).
+- Android-приложение `ru.usbashka.mob`, версия `1.0.1` (versionCode `2`).
 - Java + Android WebView с локальным HTTPS-origin `https://appassets.androidplatform.net/assets/www/` через AndroidX WebViewAssetLoader.
 - Реальный движок **Rusterize**, скомпилированный из Rust в WASM, исполняется в WebView. Нативная оболочка обеспечивает файлы, камеру, сохранение копий и авторизацию Google.
 - Весь курс, библиотека, интерфейс и WASM включены в APK. Service worker внутри APK отключён, чтобы обновление приложения сразу заменяло ресурсы.
@@ -30,7 +30,7 @@ Package name: ru.usbashka.mob
 SHA-1: F9:AE:B7:73:C4:20:39:64:86:DA:E2:C9:3D:62:99:7F:FB:C8:6C:1C
 ```
 
-Это сертификат подписанного APK `MOB-1.0.0.apk`. OAuth client secret в приложении не нужен. Для APK не нужно вводить веб Client ID: Google определяет Android-клиент по пакету и подписи. После настройки нажмите **Настройки → Подключить Google Диск**. Для веб/PWA используйте отдельный клиент типа Web application по [инструкции Google Диска](GOOGLE_DRIVE.md).
+Это сертификат подписанного APK `MOB-1.0.1.apk`. OAuth client secret в приложении не нужен. Для APK не нужно вводить веб Client ID: Google определяет Android-клиент по пакету и подписи. После настройки нажмите **Настройки → Подключить Google Диск**. Для веб/PWA используйте отдельный клиент типа Web application по [инструкции Google Диска](GOOGLE_DRIVE.md).
 
 Для собственной сборки создайте Android OAuth-клиент с **её** SHA-1. Отпечаток debug-сборки отличается. Ошибка `DEVELOPER_ERROR` / код `10` обычно означает несовпадение package name или сертификата, отсутствие Android OAuth-клиента либо неверный Cloud-проект. Согласие и обмен с реальным аккаунтом требуют настроенного Google Cloud проекта; наличие интерфейса подключения само по себе не означает, что Google уже разрешил доступ.
 
@@ -45,7 +45,7 @@ npm run build
 npm run build:android
 ```
 
-Результат для локального тестирования: `artifacts/MOB-1.0.0-debug.apk`. Скрипт копирует только публичную веб-сборку, собирает APK и запускает Android lint. Тестовый APK подписан debug-ключом вашей машины; он не устанавливается поверх официальной release-сборки. Не удаляйте приложение с нужными записями ради debug-сборки без резервной копии.
+Результат для локального тестирования: `artifacts/MOB-1.0.1-debug.apk`. Скрипт копирует только публичную веб-сборку, собирает APK и запускает Android lint. Тестовый APK подписан debug-ключом вашей машины; он не устанавливается поверх официальной release-сборки. Не удаляйте приложение с нужными записями ради debug-сборки без резервной копии.
 
 ### Постоянная подпись и обновления
 
@@ -65,9 +65,9 @@ npm run build
 npm run build:android -- --release
 ```
 
-Результат: `artifacts/MOB-1.0.0.apk`. Для следующего выпуска увеличьте `versionCode` и `versionName` в `android/app/build.gradle`, обновите имя APK в скрипте сборки и подготовьте отдельный GitHub Release. Используйте тот же приватный ключ. При настройке будущей автоматической release-сборки храните base64 ключа в Actions secret `MOB_ANDROID_KEYSTORE_BASE64`, пароли — в `MOB_ANDROID_STORE_PASSWORD` / `MOB_ANDROID_KEY_PASSWORD`, alias — в `MOB_ANDROID_KEY_ALIAS`; не вставляйте секреты прямо в workflow.
+Результат: `artifacts/MOB-1.0.1.apk`. Для следующего выпуска увеличьте `versionCode` и `versionName` в `android/app/build.gradle`, обновите имя APK в скрипте сборки и подготовьте отдельный GitHub Release. Используйте тот же приватный ключ. При настройке будущей автоматической release-сборки храните base64 ключа в Actions secret `MOB_ANDROID_KEYSTORE_BASE64`, пароли — в `MOB_ANDROID_STORE_PASSWORD` / `MOB_ANDROID_KEY_PASSWORD`, alias — в `MOB_ANDROID_KEY_ALIAS`; не вставляйте секреты прямо в workflow.
 
-В текущем CI Android-сборка и lint запускаются заново, затем проверяется подготовленный подписанный дистрибутив `distributions/MOB-1.0.0.apk`. Workflow публикует его в первом релизе `v1.0.0` и никогда не заменяет существующий релиз debug-сборкой. Дистрибутив не включается в веб-сайт или офлайн-кеш PWA.
+В текущем CI Android-сборка и lint запускаются заново, затем проверяется подготовленный подписанный дистрибутив `distributions/MOB-1.0.1.apk`. Workflow публикует его в релизе `v1.0.1` и никогда не заменяет существующий релиз debug-сборкой. Дистрибутив не включается в веб-сайт или офлайн-кеш PWA.
 
 Публичный SHA-256 сертификата:
 
@@ -79,5 +79,5 @@ EE:A4:0F:C8:17:49:78:40:6B:D1:A8:0C:15:F8:64:4F:CA:96:BC:DE:0D:97:B7:EE:1E:EA:09
 
 ```sh
 (cd distributions && sha256sum --check SHA256SUMS)
-"$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.0.apk
+"$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.1.apk
 ```

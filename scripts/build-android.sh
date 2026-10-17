@@ -14,7 +14,7 @@ cp -R dist/. android/app/src/main/assets/www/
 rm -f android/app/src/main/assets/www/sw.js
 GRADLE_TASK=assembleDebug
 APK_SOURCE=android/app/build/outputs/apk/debug/app-debug.apk
-APK_DEST=artifacts/MOB-1.0.0-debug.apk
+APK_DEST=artifacts/MOB-1.0.1-debug.apk
 if [[ "${1:-}" == '--release' ]]; then
   : "${MOB_ANDROID_KEYSTORE:?Set MOB_ANDROID_KEYSTORE for a signed release}"
   : "${MOB_ANDROID_STORE_PASSWORD:?Set MOB_ANDROID_STORE_PASSWORD}"
@@ -22,7 +22,7 @@ if [[ "${1:-}" == '--release' ]]; then
   : "${MOB_ANDROID_KEY_PASSWORD:?Set MOB_ANDROID_KEY_PASSWORD}"
   GRADLE_TASK=assembleRelease
   APK_SOURCE=android/app/build/outputs/apk/release/app-release.apk
-  APK_DEST=artifacts/MOB-1.0.0.apk
+  APK_DEST=artifacts/MOB-1.0.1.apk
 fi
 ./android/gradlew -p android --no-daemon "$GRADLE_TASK" lint
 cp "$APK_SOURCE" "$APK_DEST"
