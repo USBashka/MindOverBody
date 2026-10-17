@@ -40,8 +40,8 @@
       <path d="M 320,35 V 41" transform="rotate(24 320 320)"/>
     </g>
   </defs>
-  <g fill="#171918">
-    <g aria-hidden="true" fill="none" stroke="#171918">
+  <g fill="#8a8a8a">
+    <g aria-hidden="true" fill="none" stroke="#8a8a8a">
       <g stroke-width="1" opacity=".24">
         <use href="#tick-sector"/>
         <use href="#tick-sector" transform="rotate(30 320 320)"/>
@@ -74,13 +74,13 @@
       <circle cx="320" cy="320" r="188" stroke-width=".75" opacity=".18"/>
       <g class="counter-orbit" stroke-linecap="round">
         <circle cx="320" cy="320" r="256" pathLength="360" stroke-dasharray="66 24 8 82" stroke-width="1.5" opacity=".65" transform="rotate(-90 320 320)"/>
-        <circle cx="320" cy="64" r="4" fill="#171918" stroke="none"/>
+        <circle cx="320" cy="64" r="4" fill="#8a8a8a" stroke="none"/>
         <circle cx="320" cy="576" r="5" fill="#cc684b" stroke="none"/>
       </g>
       <g class="satellites">
         <circle cx="320" cy="320" r="188" pathLength="360" stroke-dasharray="32 148" stroke-width="1.5" opacity=".5" transform="rotate(-90 320 320)"/>
         <circle cx="320" cy="132" r="4" fill="#cc684b" stroke="none"/>
-        <circle cx="320" cy="508" r="3" fill="#171918" stroke="none"/>
+        <circle cx="320" cy="508" r="3" fill="#8a8a8a" stroke="none"/>
       </g>
       <g stroke-width="1" opacity=".35">
         <use href="#cross" transform="translate(103 103)"/>
