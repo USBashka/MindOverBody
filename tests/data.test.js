@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createEmptyState, extractTagNames, parseSomnio, mergeStates, validateBackup, exportBackup, restoreConflict, localDate } from '../src/data.js';
+import { createEmptyState, extractTagNames, parseSomnio, mergeStates, validateBackup, exportBackup, restoreConflict, localDate, nextTimestamp } from '../src/data.js';
 
 const epoch = '2026-01-01T12:00:00.000Z';
 const later = '2026-01-02T12:00:00.000Z';
@@ -153,4 +153,25 @@ test('backup rejects archived versions referencing nonexistent tags', () => {
   const state = createEmptyState();
   state.conflicts = [{ collection: 'entries', record: makeEntry({ tagIds: ['missing'] }) }];
   assert.throws(() => validateBackup(state), /архиве версий.*отсутствующими/);
+});
+
+test('nextTimestamp uses wall time or strictly follows the newest previous record clock', t => {
+  t.mock.method(Date, 'now', () => Date.parse(epoch));
+  assert.equal(nextTimestamp(), epoch);
+  assert.equal(nextTimestamp('invalid'), epoch);
+  assert.equal(nextTimestamp(epoch), '2026-01-01T12:00:00.001Z');
+  assert.equal(nextTimestamp(Date.parse(later)), '2026-01-02T12:00:00.001Z');
+  assert.equal(nextTimestamp({ updatedAt: later, deletedAt: '2030-01-01T00:00:00.000Z' }), '2030-01-01T00:00:00.001Z');
+  assert.equal(nextTimestamp({ createdAt: '2031-01-01T00:00:00.000Z' }), '2031-01-01T00:00:00.001Z');
+});
+
+test('edit and restore remain selected after merging a device with a future clock', t => {
+  t.mock.method(Date, 'now', () => Date.parse(epoch));
+  const future = makeEntry({ body: 'Future-clock version', updatedAt: '2030-01-01T00:00:00.000Z' });
+  const edit = { ...future, body: 'User correction', updatedAt: nextTimestamp(future) };
+  assert.equal(mergeStates(stateWith(edit), stateWith(future)).entries[0].body, 'User correction');
+  const merged = mergeStates(stateWith(makeEntry()), stateWith(future));
+  const restored = restoreConflict(merged, merged.conflicts[0].id);
+  assert.equal(restored.entries[0].updatedAt, '2030-01-01T00:00:00.001Z');
+  assert.equal(mergeStates(restored, stateWith(future)).entries[0].body, makeEntry().body);
 });

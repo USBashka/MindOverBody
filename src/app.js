@@ -11,6 +11,7 @@ import {
   exportBackup,
   requestPersistentStorage,
   restoreConflict,
+  nextTimestamp,
 } from "./data.js";
 import {
   connectDrive,
@@ -380,8 +381,8 @@ function openEntry(entryId) {
         "Удалить",
       )
     ) {
-      e.deletedAt = now();
-      e.updatedAt = now();
+      e.updatedAt = nextTimestamp(e);
+      e.deletedAt = e.updatedAt;
       await persist();
       el.close();
       render();
@@ -683,7 +684,7 @@ function openEditor(existing = null, preset = {}) {
         value.title ||
         plainText(value.body).split("\n")[0].slice(0, 80) ||
         "Воспоминание";
-      value.updatedAt = now();
+      value.updatedAt = nextTimestamp(value);
       state.tags.push(
         ...pendingTags.filter(
           (t) =>
@@ -809,7 +810,7 @@ function openTagEditor(existing) {
     if (duplicate) return toast("Тег с таким именем уже есть", true);
     tag.type = $('[name="type"]', el).value;
     tag.description = $('[name="description"]', el).value;
-    tag.updatedAt = now();
+    tag.updatedAt = nextTimestamp(tag);
     const ix = state.tags.findIndex((t) => t.id === tag.id);
     if (ix >= 0) state.tags[ix] = tag;
     else state.tags.push(tag);
@@ -826,8 +827,8 @@ function openTagEditor(existing) {
         "Удалить",
       )
     ) {
-      existing.deletedAt = now();
-      existing.updatedAt = now();
+      existing.updatedAt = nextTimestamp(existing);
+      existing.deletedAt = existing.updatedAt;
       await persist();
       el.close();
       render();
@@ -891,7 +892,7 @@ function openLesson(lid) {
     "reader-modal",
   );
   $("[data-complete]", el).onclick = async () => {
-    state.progress[lid] = { completed: !completed, updatedAt: now() };
+    state.progress[lid] = { completed: !completed, updatedAt: nextTimestamp(state.progress[lid]) };
     await persist();
     el.close();
     render();
@@ -989,7 +990,7 @@ async function bindMap() {
         if (t) {
           t.x = pos.x;
           t.y = pos.y;
-          t.updatedAt = now();
+          t.updatedAt = nextTimestamp(t);
           persist().catch(() => {});
         }
       },

@@ -17,6 +17,20 @@ export function localDate(value = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+/** Keep edits newer than the previous version even when another device's clock is ahead. */
+export function nextTimestamp(previous) {
+  const values = plain(previous) ? [previous.updatedAt, previous.deletedAt, previous.createdAt] : [previous];
+  let milliseconds = Date.now();
+  for (const value of values) {
+    if (typeof value !== 'string' && typeof value !== 'number') continue;
+    const parsed = new Date(value).getTime();
+    if (Number.isFinite(parsed)) milliseconds = Math.max(milliseconds, parsed + 1);
+  }
+  const date = new Date(milliseconds);
+  if (!Number.isFinite(date.getTime())) throw new Error('Дата предыдущей версии выходит за допустимый диапазон. Проверьте дату устройства.');
+  return date.toISOString();
+}
+
 export function createEmptyState() {
   return { version: DATA_VERSION, entries: [], tags: [], progress: {}, settings: {}, conflicts: [] };
 }
@@ -203,7 +217,7 @@ export function restoreConflict(state, savedId) {
   if (!saved) throw new Error('Сохранённая версия не найдена.');
   const current = result[saved.collection].find(record => record.id === saved.recordId);
   if (current) result.conflicts.push({ id: conflictId(saved.collection, current), collection: saved.collection, recordId: current.id, record: clone(current) });
-  const restored = { ...clone(saved.record), updatedAt: new Date(Math.max(Date.now(), recordClock(saved.record) + 1, current ? recordClock(current) + 1 : 0)).toISOString() };
+  const restored = { ...clone(saved.record), updatedAt: nextTimestamp(Math.max(recordClock(saved.record), current ? recordClock(current) : 0)) };
   // Restoring a deletion restores that action too; choosing an earlier live
   // version explicitly revives the record without losing the deletion history.
   if (restored.deletedAt) restored.deletedAt = restored.updatedAt;
