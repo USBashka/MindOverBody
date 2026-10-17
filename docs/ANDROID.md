@@ -81,3 +81,15 @@ EE:A4:0F:C8:17:49:78:40:6B:D1:A8:0C:15:F8:64:4F:CA:96:BC:DE:0D:97:B7:EE:1E:EA:09
 (cd distributions && sha256sum --check SHA256SUMS)
 "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.1.apk
 ```
+
+## Проверка на Android-эмуляторе
+
+GitHub Actions запускает подписанный дистрибутив на Android 15 (API 35) с аппаратным ускорением. Сценарий управляет приложением через Android accessibility и системные касания: установка, создание записи, сохранение после перезапуска, карта, импорт через системный выбор файла и экспорт JSON в Downloads с проверкой содержимого. Google-аккаунт для этого не нужен.
+
+На уже запущенном отдельном эмуляторе повторить проверку можно так:
+
+```sh
+ANDROID_SERIAL=emulator-5554 python3 scripts/check-android-files.py --native-files
+```
+
+Скрипт работает только с `emulator-*`, создаёт вымышленные записи и сохраняет скриншоты, accessibility XML и отчёт в `artifacts/android/`. Реальная камера, OAuth и разнообразие физических устройств в этот сценарий не входят.

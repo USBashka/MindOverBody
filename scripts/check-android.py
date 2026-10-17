@@ -48,6 +48,43 @@ def find_node(tree, text, editable=False, exact=False):
     return max(matches, key=lambda pair: pair[0])[1] if matches else None
 
 
+def find_labeled_input(tree, identifier, label):
+    """Resolve a unique input even when WebView omits its HTML label relation."""
+    inputs = [node for node in tree.iter("node")
+              if node.get("class", "").endswith("EditText")
+              and node.get("enabled") != "false" and bounds(node) is not None]
+    named = []
+    for node in inputs:
+        values = [node.get(key, "") for key in ("text", "content-desc", "resource-id", "hint")]
+        if any(value in (identifier, label) for value in values) or node.get("resource-id", "").endswith("/" + identifier):
+            named.append(node)
+    if len(named) > 1:
+        raise RuntimeError(f"Ambiguous input {identifier!r}: {len(named)} controls have its name")
+    if named:
+        return named[0]
+
+    # UIAutomator can expose a screen-reader-only HTML label as a tiny sibling
+    # while leaving its EditText name, hint and resource-id empty. Its live
+    # position still identifies the containing control without assuming order.
+    associated = set()
+    for node in tree.iter("node"):
+        rectangle = bounds(node)
+        if (node in inputs or node.get("enabled") == "false" or rectangle is None
+                or label not in (node.get("text", ""), node.get("content-desc", ""))):
+            continue
+        left, top, right, bottom = rectangle
+        x, y = (left + right) / 2, (top + bottom) / 2
+        for candidate in inputs:
+            if candidate.get("package") != node.get("package"):
+                continue
+            left, top, right, bottom = bounds(candidate)
+            if left <= x < right and top <= y < bottom:
+                associated.add(candidate)
+    if len(associated) > 1:
+        raise RuntimeError(f"Ambiguous input {identifier!r}: label {label!r} overlaps {len(associated)} controls")
+    return next(iter(associated)) if associated else None
+
+
 class Smoke:
     def __init__(self, args):
         self.args = args
@@ -99,6 +136,9 @@ class Smoke:
         return self.tree
 
     def screenshot(self, name):
+        # WebView's accessibility tree can update before the compositor paints
+        # the corresponding frame, especially immediately after launch.
+        time.sleep(.8)
         image = self.adb("exec-out", "screencap", "-p", timeout=15, binary=True)
         if not image.startswith(b"\x89PNG\r\n\x1a\n"):
             raise RuntimeError("Android did not return a PNG screenshot")
@@ -119,6 +159,26 @@ class Smoke:
                 last_error = str(error)
             time.sleep(max(0, min(2, deadline - time.monotonic())))
         raise RuntimeError(f"Visible UI did not contain {text!r} within {seconds}s: {last_error}")
+
+    def wait_labeled_input(self, identifier, label, seconds=30):
+        deadline = time.monotonic() + min(60, seconds)
+        last_error = "no uniquely associated input in the visible accessibility tree"
+        tree = self.tree
+        while time.monotonic() < deadline:
+            if tree is not None:
+                # Ambiguity is an immediate failure, not a reason to tap an
+                # arbitrary control or keep polling until another one vanishes.
+                node = find_labeled_input(tree, identifier, label)
+                if node is not None:
+                    return node
+            try:
+                tree = self.dump(timeout=min(15, deadline - time.monotonic()))
+            except (RuntimeError, subprocess.TimeoutExpired, ET.ParseError) as error:
+                last_error = str(error)
+                tree = None
+            if tree is None:
+                time.sleep(max(0, min(2, deadline - time.monotonic())))
+        raise RuntimeError(f"Visible UI did not contain input {identifier!r} ({label}) within {seconds}s: {last_error}")
 
     def tap(self, node):
         left, top, right, bottom = bounds(node)
@@ -182,10 +242,7 @@ class Smoke:
 
         self.tap(self.wait_text("Новая запись"))
         self.wait_text("Что хочется сохранить?")
-        try:
-            title_input = self.wait_text("entry-title", editable=True, seconds=12)
-        except RuntimeError:
-            title_input = self.wait_text("Название", editable=True, seconds=12)
+        title_input = self.wait_labeled_input("entry-title", "Название")
         self.tap(title_input)
         self.adb("shell", "input", "text", self.title)
         self.wait_text(self.title, editable=True)

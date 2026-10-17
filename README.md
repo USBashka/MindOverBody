@@ -1,7 +1,7 @@
 # MOB · Mind Over Body
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/USBashka/MindOverBody/d2e249a73d201893d596239229afc8942aeca63b/mob.svg" alt="Эмблема MindOverBody" width="180" height="180">
+  <img src="mob.svg" alt="Эмблема MindOverBody" width="180" height="180">
 </p>
 
 <p align="center"><strong>Сохраняйте ускользающее. Замечайте связи.</strong><br>Личный дневник сновидений, атлас внутренних миров и полноценный курс практики.</p>
