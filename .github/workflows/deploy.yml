@@ -1,0 +1,129 @@
+name: Deploy MOB
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mob-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:rust
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          E2E_SCREENSHOTS: artifacts/screenshots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-results
+          path: artifacts/screenshots/
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mob-web
+          path: dist/
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  android:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: mob-web
+          path: dist
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Build installable APK and run Android lint
+        run: bash scripts/build-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MOB-Android-Debug-Checks
+          path: artifacts/*.apk
+          if-no-files-found: error
+      - name: Verify the signed release distribution
+        run: |
+          (cd distributions && sha256sum --check SHA256SUMS)
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs distributions/MOB-1.0.0.apk | grep -F 'eea40fc8174978406bd1a80c15f8644fca96bcde0d97b7ee1eea097f6fe61d37'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MOB-Android-APK
+          path: distributions/MOB-1.0.0.apk
+          if-no-files-found: error
+      - name: Publish APK for direct download
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > "$RUNNER_TEMP/mob-release-notes.md" <<'NOTES'
+          MOB: локальный дневник сновидений, полный курс, библиотека, карта Rusterize и статистика.
+
+          Веб: https://usbashka.github.io/MindOverBody/
+
+          Скачайте APK ниже. Приложение работает офлайн, без аккаунта MOB.
+          Google Диск подключается отдельно; настройка Android OAuth описана в docs/ANDROID.md.
+
+          APK подписан постоянным release-ключом MOB; отладка отключена. Сертификат и инструкция сборки: docs/ANDROID.md.
+          NOTES
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            echo 'Release v1.0.0 already exists; preserving its version and notes.'
+          else
+            gh release create v1.0.0 --target "$GITHUB_SHA" --title 'MOB 1.0' --notes-file "$RUNNER_TEMP/mob-release-notes.md"
+          fi
+          if ! gh release view v1.0.0 --json assets --jq '.assets[].name' | grep -Fx 'MOB-1.0.0.apk'; then
+            gh release upload v1.0.0 distributions/MOB-1.0.0.apk distributions/SHA256SUMS
+          fi

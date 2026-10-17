@@ -1,0 +1,22 @@
+[package]
+name = "mob-map"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+description = "MOB dream atlas: shared Rusterize native Canvas and WebAssembly UI"
+
+[lib]
+crate-type = ["cdylib", "rlib", "staticlib"]
+
+[dependencies]
+rusterize = { path = "../vendor/rusterize/crates/rusterize", default-features = false }
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+
+[workspace]

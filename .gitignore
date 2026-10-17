@@ -8,3 +8,13 @@
 Thumbs.db
 *.tmp
 *.bak
+node_modules/
+dist/
+artifacts/
+native/target/
+*.apk
+*.jks
+*.keystore
+*.p12
+local.properties
+!distributions/MOB-1.0.0.apk

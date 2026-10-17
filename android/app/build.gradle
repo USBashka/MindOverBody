@@ -1,0 +1,41 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'ru.usbashka.mob'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'ru.usbashka.mob'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        if (System.getenv('MOB_ANDROID_KEYSTORE')) {
+            release {
+                storeFile file(System.getenv('MOB_ANDROID_KEYSTORE'))
+                storePassword System.getenv('MOB_ANDROID_STORE_PASSWORD')
+                keyAlias System.getenv('MOB_ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('MOB_ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('MOB_ANDROID_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+    implementation 'androidx.webkit:webkit:1.13.0'
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+}

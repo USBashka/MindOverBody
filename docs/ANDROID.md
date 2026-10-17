@@ -1,0 +1,81 @@
+# MOB для Android
+
+## Установить приложение
+
+Скачайте **MOB-1.0.0.apk** из [релиза MOB 1.0](https://github.com/USBashka/MindOverBody/releases/tag/v1.0.0). Откройте файл и при необходимости разрешите установку из выбранного браузера или файлового менеджера. Это настоящий подписанный APK с упакованными ресурсами, а не ссылка на PWA.
+
+Требуется Android 8.0+ и актуальный **Android System WebView** (Chromium 120+ рекомендуется). Для синхронизации нужны Google Play Services и подключённый аккаунт Google; без них локальный дневник, курс, карта и импорт работают самостоятельно. Не удаляйте установленное приложение для обычного обновления: APK с той же подписью обновляет программу, сохраняя локальные записи.
+
+Сначала сделайте JSON-копию перед экспериментами с другими сборками. APK и браузер/PWA имеют независимые хранилища. Для переноса используйте импорт/экспорт или Google Диск.
+
+## Что находится внутри
+
+- Android-приложение `ru.usbashka.mob`, версия `1.0.0` (versionCode `1`).
+- Java + Android WebView с локальным HTTPS-origin `https://appassets.androidplatform.net/assets/www/` через AndroidX WebViewAssetLoader.
+- Реальный движок **Rusterize**, скомпилированный из Rust в WASM, исполняется в WebView. Нативная оболочка обеспечивает файлы, камеру, сохранение копий и авторизацию Google.
+- Весь курс, библиотека, интерфейс и WASM включены в APK. Service worker внутри APK отключён, чтобы обновление приложения сразу заменяло ресурсы.
+- Записи хранятся в IndexedDB приватного WebView. Android Auto Backup отключён; внешние ссылки открываются в системном браузере. Для камеры используется системное приложение, для файлов — системный диалог. Приложение не запрашивает доступ ко всей фотогалерее или фоновый доступ к камере.
+- Release-сборка не разрешает WebView debugging. Встроенного сервера и аккаунтов MOB нет.
+
+## Подключить Google Диск в APK
+
+Google запрещает веб-авторизацию внутри встроенных WebView, поэтому MOB использует **Google Play Services AuthorizationClient**. Токен выдаётся приложению только после системного согласия, хранится в памяти и используется напрямую для Drive API с единственным scope `https://www.googleapis.com/auth/drive.appdata`.
+
+В [Google Cloud Console](https://console.cloud.google.com/) создайте проект, включите **Google Drive API**, настройте OAuth consent screen и добавьте собственный аккаунт в Test users, если проект в режиме Testing. Создайте OAuth Client ID типа **Android**:
+
+```text
+Package name: ru.usbashka.mob
+SHA-1: F9:AE:B7:73:C4:20:39:64:86:DA:E2:C9:3D:62:99:7F:FB:C8:6C:1C
+```
+
+Это сертификат подписанного APK `MOB-1.0.0.apk`. OAuth client secret в приложении не нужен. Для APK не нужно вводить веб Client ID: Google определяет Android-клиент по пакету и подписи. После настройки нажмите **Настройки → Подключить Google Диск**. Для веб/PWA используйте отдельный клиент типа Web application по [инструкции Google Диска](GOOGLE_DRIVE.md).
+
+Для собственной сборки создайте Android OAuth-клиент с **её** SHA-1. Отпечаток debug-сборки отличается. Ошибка `DEVELOPER_ERROR` / код `10` обычно означает несовпадение package name или сертификата, отсутствие Android OAuth-клиента либо неверный Cloud-проект. Согласие и обмен с реальным аккаунтом требуют настроенного Google Cloud проекта; наличие интерфейса подключения само по себе не означает, что Google уже разрешил доступ.
+
+## Собрать APK
+
+Установите Node.js 22+, JDK 17, Android SDK Platform 35 и Build Tools 35.0.0. Укажите `ANDROID_HOME`. Gradle 8.13 загружается wrapper-скриптом с проверкой SHA-256.
+
+```sh
+npm ci
+npm test
+npm run build
+npm run build:android
+```
+
+Результат для локального тестирования: `artifacts/MOB-1.0.0-debug.apk`. Скрипт копирует только публичную веб-сборку, собирает APK и запускает Android lint. Тестовый APK подписан debug-ключом вашей машины; он не устанавливается поверх официальной release-сборки. Не удаляйте приложение с нужными записями ради debug-сборки без резервной копии.
+
+### Постоянная подпись и обновления
+
+Первый release APK подписан новым постоянным ключом, созданным вне Git-репозитория. Приватный ключ и пароль передаются владельцу отдельно и **никогда не публикуются** в исходниках, GitHub Releases или Pages. Сохраните приватный комплект в защищённом месте: без него невозможно выпустить совместимое обновление APK.
+
+Для release-сборки задайте следующие переменные через ваш менеджер секретов:
+
+```text
+MOB_ANDROID_KEYSTORE=/secure/path/mob-release.p12
+MOB_ANDROID_STORE_PASSWORD=<пароль хранилища>
+MOB_ANDROID_KEY_ALIAS=mob-release
+MOB_ANDROID_KEY_PASSWORD=<пароль ключа>
+```
+
+```sh
+npm run build
+npm run build:android -- --release
+```
+
+Результат: `artifacts/MOB-1.0.0.apk`. Для следующего выпуска увеличьте `versionCode` и `versionName` в `android/app/build.gradle`, обновите имя APK в скрипте сборки и подготовьте отдельный GitHub Release. Используйте тот же приватный ключ. При настройке будущей автоматической release-сборки храните base64 ключа в Actions secret `MOB_ANDROID_KEYSTORE_BASE64`, пароли — в `MOB_ANDROID_STORE_PASSWORD` / `MOB_ANDROID_KEY_PASSWORD`, alias — в `MOB_ANDROID_KEY_ALIAS`; не вставляйте секреты прямо в workflow.
+
+В текущем CI Android-сборка и lint запускаются заново, затем проверяется подготовленный подписанный дистрибутив `distributions/MOB-1.0.0.apk`. Workflow публикует его в первом релизе `v1.0.0` и никогда не заменяет существующий релиз debug-сборкой. Дистрибутив не включается в веб-сайт или офлайн-кеш PWA.
+
+Публичный SHA-256 сертификата:
+
+```text
+EE:A4:0F:C8:17:49:78:40:6B:D1:A8:0C:15:F8:64:4F:CA:96:BC:DE:0D:97:B7:EE:1E:EA:09:7F:6F:E6:1D:37
+```
+
+Проверка подписи и целостности:
+
+```sh
+(cd distributions && sha256sum --check SHA256SUMS)
+"$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs distributions/MOB-1.0.0.apk
+```

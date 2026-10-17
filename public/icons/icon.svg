@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>MOB — Mind Over Body</title>
+  <rect width="512" height="512" rx="112" fill="#101110"/>
+  <circle cx="256" cy="256" r="182" fill="none" stroke="#55584e" stroke-width="2"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#55584e" stroke-width="2" stroke-dasharray="52 20 3 60"/>
+  <circle cx="256" cy="74" r="7" fill="#c1cc84"/>
+  <circle cx="256" cy="438" r="7" fill="#c66e51"/>
+  <path d="M256 126C259 148 263 152 283 155C263 158 259 162 256 184C253 162 249 158 229 155C249 152 253 148 256 126Z" fill="#c1cc84"/>
+  <g fill="#deded5" transform="translate(90 212) scale(.89)">
+    <path d="M0 96V0H26L48 44L70 0H96V96H71V45L56 75H40L25 45V96Z"/>
+    <path fill-rule="evenodd" d="M159-2C190-2 209 17 209 48C209 79 190 98 159 98C128 98 109 79 109 48C109 17 128-2 159-2ZM159 22C144 22 136 32 136 48C136 64 144 74 159 74C174 74 182 64 182 48C182 32 174 22 159 22Z"/>
+    <path fill-rule="evenodd" d="M223 0H275C301 0 316 9 316 25C316 36 310 43 301 47C313 50 320 58 320 70C320 88 305 96 278 96H223ZM249 21V37H273C284 37 289 35 289 29C289 23 284 21 273 21ZM249 57V75H276C288 75 293 73 293 66C293 60 288 57 276 57Z"/>
+  </g>
+  <path d="M226 351H242L250 342L258 361L266 337L274 351H290" fill="none" stroke="#c66e51" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

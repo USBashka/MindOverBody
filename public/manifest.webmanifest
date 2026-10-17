@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "MOB — Mind Over Body",
+  "short_name": "MOB",
+  "description": "Твоё пространство сновидений: дневник, карта и практика осознанности. Работает без интернета.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#101110",
+  "theme_color": "#101110",
+  "categories": ["lifestyle", "education", "productivity"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Дневник сновидений", "short_name": "Дневник", "url": "./#diary", "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Карта сновидений", "short_name": "Карта", "url": "./#map" },
+    { "name": "Уроки", "url": "./#lessons" }
+  ]
+}
