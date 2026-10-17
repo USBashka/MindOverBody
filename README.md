@@ -1,7 +1,7 @@
 # MindOverBody · MOB
 
 <p align="center">
-  <img src="mob.svg" alt="Эмблема MindOverBody" width="240" height="240">
+  <img src="mob.svg?v=2" alt="Эмблема MindOverBody" width="240" height="240">
 </p>
 
 MindOverBody — проект курса и приложения для изучения осознанных сновидений, развития внимания и воображения, построения внутренних миров и исследования внутреннего диалога.
