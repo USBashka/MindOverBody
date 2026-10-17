@@ -7,13 +7,15 @@
 <p align="center"><strong>Сохраняйте ускользающее. Замечайте связи.</strong><br>Личный дневник сновидений, атлас внутренних миров и полноценный курс практики.</p>
 
 <p align="center">
-<a href="https://usbashka.github.io/MindOverBody/">Открыть приложение</a> ·
+<a href="docs/INSTALL.md#github-pages">Запуск веб-версии</a> ·
 <a href="https://github.com/USBashka/MindOverBody/releases/tag/v1.0.1">Скачать Android APK</a> ·
 <a href="docs/INSTALL.md">Установка PWA</a> ·
 <a href="docs/GOOGLE_DRIVE.md">Подключить Google Диск</a>
 </p>
 
 [![Build & deploy](https://github.com/USBashka/MindOverBody/actions/workflows/deploy.yml/badge.svg)](https://github.com/USBashka/MindOverBody/actions)
+
+APK 1.0.1 опубликован и прошёл проверку на Android 15. Веб-сборка и браузерные проверки проходят. Для первой публикации сайта владельцу нужно включить [Settings → Pages → Source → GitHub Actions](https://github.com/USBashka/MindOverBody/settings/pages): GitHub отклонил автоматическое включение. До этого общий статус workflow показывает ошибку публикации Pages; [подробный отчёт](docs/VALIDATION.md).
 
 ![Дневник MOB с вымышленными примерами записей](docs/images/diary-desktop.png)
 
@@ -41,6 +43,13 @@ MOB работает локально: без сервера приложени�
 - **Данные APK и браузера раздельны.** Для переноса используйте JSON или подключите оба устройства к одному Google Cloud OAuth-проекту и аккаунту Drive.
 
 Оболочка APK — системный Android WebView. Карта выполняет тот же Rust/WASM-код, что и веб-версия; это не прямой нативный Android Canvas/JNI-бэкенд. Дневник и текстовые разделы используют доступный HTML-интерфейс с системной клавиатурой. Подробности: [RUSTERIZE.md](docs/RUSTERIZE.md).
+
+<details>
+<summary>APK на Android 15 — скриншот из успешной проверки</summary>
+
+<img src="docs/images/android-native.png" alt="Дневник MOB в Android APK, пустое личное пространство" width="360">
+
+</details>
 
 ![Карта локаций в MOB](docs/images/map-desktop.png)
 
