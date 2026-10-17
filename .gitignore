@@ -18,3 +18,5 @@ native/target/
 *.p12
 local.properties
 !distributions/MOB-1.0.0.apk
+__pycache__/
+*.pyc

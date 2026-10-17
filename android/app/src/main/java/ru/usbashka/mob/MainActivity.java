@@ -127,11 +127,20 @@ public final class MainActivity extends Activity {
                 try {
                     Intent select = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     select.addCategory(Intent.CATEGORY_OPENABLE);
-                    String[] types = params.getAcceptTypes();
-                    String mime = types.length > 0 && !types[0].isEmpty() ? types[0] : "*/*";
-                    // HTML may use .json; Android pickers require MIME types.
-                    if (mime.startsWith(".")) mime = mime.equals(".json") ? "application/json" : "*/*";
+                    java.util.LinkedHashSet<String> accepted = new java.util.LinkedHashSet<>();
+                    for (String group : params.getAcceptTypes()) {
+                        for (String raw : group.split(",")) {
+                            String type = raw.trim().toLowerCase(Locale.ROOT);
+                            // HTML may use .json; Android pickers require MIME types.
+                            if (type.equals(".json")) type = "application/json";
+                            if (type.matches("[a-z0-9+.*-]+/[a-z0-9+.*-]+")) accepted.add(type);
+                        }
+                    }
+                    boolean imagesOnly = !accepted.isEmpty();
+                    for (String type : accepted) if (!type.startsWith("image/")) imagesOnly = false;
+                    String mime = imagesOnly ? "image/*" : accepted.size() == 1 ? accepted.iterator().next() : "*/*";
                     select.setType(mime);
+                    if (accepted.size() > 1) select.putExtra(Intent.EXTRA_MIME_TYPES, accepted.toArray(new String[0]));
                     select.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
                     Intent camera = mime.startsWith("image/") ? makeCameraIntent() : null;
                     if (params.isCaptureEnabled() && camera != null) {

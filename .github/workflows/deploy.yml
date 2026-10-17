@@ -107,6 +107,24 @@ jobs:
           name: MOB-Android-APK
           path: distributions/MOB-1.0.0.apk
           if-no-files-found: error
+      - name: Enable Android emulator acceleration
+        run: sudo chmod a+rw /dev/kvm
+      - name: Run the signed APK on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash scripts/check-android.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-runtime-results
+          path: artifacts/android/
+          if-no-files-found: ignore
       - name: Publish APK for direct download
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
